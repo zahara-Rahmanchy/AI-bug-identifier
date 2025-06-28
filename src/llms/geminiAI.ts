@@ -1,9 +1,12 @@
 import { GoogleGenAI } from "@google/genai";
+import dotenv from 'dotenv';
 export interface IInput  {
   language:string,
   code:string
 }
-const ai = new GoogleGenAI({apiKey:"AIzaSyBizPigzI0E6sB8-xKTibGIO4u1M_E0cG4"});
+dotenv.config()
+const key = process.env.GEMINI_API_KEY;
+const ai = new GoogleGenAI({apiKey:key});
 
 export const analyzeCodeWithGemini=async (systemPrompt:string,contentPrompt:string)=> {
 
