@@ -13,6 +13,12 @@ const app: Application = express();
 // parsers
 app.use(express.json());
 app.use(cors());
+
+app.get('/', (req: Request, res: Response) => {
+  res.send('AI Bug Identifier is running');
+});
+
+
 app.use("/",bugsRoutes)
 
 app.use(globalErrorHandler)
