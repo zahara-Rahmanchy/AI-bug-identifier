@@ -1,6 +1,10 @@
 import { Language } from "@google/genai";
 import AppError from "../errors/AppError";
 import { analyzeCodeWithGemini } from "../llms/geminiAI";
+// interface PromptOptions {
+//   mode?: "casual" | "developer-friendly";
+//   language?: string;
+// }
 
 const findBugUsingllm = async (language:string,code:string)=>{
     const systemInstructionprompt=`
@@ -49,7 +53,55 @@ const findBugUsingllm = async (language:string,code:string)=>{
     return parsed
 }
 
-const getSampleBugSnippets = async(language:string,mode:string){
+const getSampleBugSnippets = async(language:string,mode:string)=>{
+    console.log("lan: ",language,"mode: ",mode)
+    const toneInstruction = mode === "casual" ? `Use a friendly, beginner-oriented tone — 
+        as if you're helping a new programmer understand the bug clearly without 
+        sounding too technical or intimidating.Avoid jargon and write explanations in a helpful 
+        and conversational way.`
+
+      : `Use a professional, developer-friendly tone — concise, technically accurate, and 
+        suitable for someone with programming experience.
+        Avoid unnecessary elaboration. Be clean and precise in your wording.`;
+
+
+    const systemPrompt = `You are an AI assistant that generates buggy code examples for learning 
+                      and debugging purposes.
+            
+            ${toneInstruction}
+            For each snippet:
+            - The code snippet must be in ${language} programming language
+            - Include the buggy code (short, 1–5 lines)
+            - Describe the type of bug and why it happens in detail
+           
+        
+            Respond with a JSON array of 3 to 5 examples.
+
+            Each item should follow:
+            {
+            
+            "code": "<buggy snippet>",
+            "bug_type": "<precise bug type>",
+            "description": "<explanation>",
+            }
+
+            Do not wrap your response in Markdown or add any extra commentary.
+            `.trim();
+
+    const userContent = `Generate 3 to 5 buggy code snippets with their bug analysis in the 
+    specified JSON format.The code should be in the ${language}`;
+
+    
+    const response = await analyzeCodeWithGemini(systemPrompt,userContent)
+
+    let raw = response?.trim();
+    
+    raw = raw?.replace(/```json|```/g, "").trim();
+
+    let parsed;
+    parsed = JSON.parse(raw as string);
+    
+    return parsed
     
 }
 
@@ -57,5 +109,6 @@ const getSampleBugSnippets = async(language:string,mode:string){
 
 
 export const BugServices = {
-    findBugUsingllm
+    findBugUsingllm,
+    getSampleBugSnippets
 }

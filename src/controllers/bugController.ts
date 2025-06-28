@@ -32,7 +32,26 @@ const findBug = async (req: Request, res: Response) => {
   }
 };
 
+const bugSampleSnippets = async(req:Request,res:Response)=>{
+  try {
+    const language = req?.query?.language? req.query.language: "python";
+    const mode = req?.query?.mode ? req?.query?.mode:  "developer-friendly";
+   console.log("language controller: ",language,"\nmode controller: ",mode)
+    const response = await BugServices.getSampleBugSnippets(language as string,mode as string);
+    res.status(200).json(response);
+
+
+  }
+
+  catch (error: any) {
+    console.error(' Error:', error.message);
+    res.status(500).json({ error: 'Failed to analyze code. Please try again.' });
+  }
+  
+
+}
 export const BugControllers={
     findBug,
+    bugSampleSnippets
     
 }

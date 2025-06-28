@@ -9,4 +9,9 @@ router.post(
   BugControllers.findBug
 );
 
+router.get(
+  '/sample-cases',
+  BugControllers.bugSampleSnippets
+);
+
 export const bugsRoutes = router;
