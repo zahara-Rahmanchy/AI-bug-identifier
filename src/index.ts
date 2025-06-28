@@ -3,6 +3,7 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import { bugsRoutes } from './routes/bugsRoute';
 import globalErrorHandler from './errors/globalErrorHandler';
+import { rateLimiter } from './middleware/rateLimiter';
 
 dotenv.config()
 const PORT = process.env.PORT;

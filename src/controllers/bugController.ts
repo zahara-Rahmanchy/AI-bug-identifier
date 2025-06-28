@@ -1,8 +1,8 @@
-import { Request, Response } from 'express';
+import { NextFunction, Request, Response } from 'express';
 import AppError from '../errors/AppError';
 import { BugServices } from '../services/bugService';
 
-const findBug = async (req: Request, res: Response) => {
+const findBug = async (req: Request, res: Response, next:NextFunction) => {
   try {
     const { code, language } = req.body;
     console.log("lang: ",language,"\ncode: ",code)
@@ -10,29 +10,28 @@ const findBug = async (req: Request, res: Response) => {
 
     if (!code || !language) {
       throw new AppError(400, 'Both code and language fields are required.');
-      
     }
+
     if (typeof code !== "string" || typeof language !== "string"){
-      res.status(400).json({ error: 'Invalid type! Code and language should be string' });
-      return;
+      throw new AppError(400, 'Invalid type! Code and language should be string'); 
     }
     const lineCount = code?.trim().split('\n').length;
       if (lineCount > 30) {
-        res.status(400).json({
-          error: `Code snippet exceeds ${30} lines. Please submit a shorter snippet.`,
-        });
-        return;
+        throw new AppError(400, `Code snippet exceeds ${30} lines. Please submit a shorter snippet.`);
+       
       }
     const result = await BugServices.findBugUsingllm(language,code);
-    console.log("res: ",typeof result)
+    // console.log("res: ",typeof result)
     res.status(201).json(result);
+
   } catch (error: any) {
     console.error(' Error:', error.message);
-    res.status(500).json({ error: 'Failed to analyze code. Please try again.' });
+    next(error)
+    // res.status(500).json({ error: 'Failed to analyze code. Please try again.' });
   }
 };
 
-const bugSampleSnippets = async(req:Request,res:Response)=>{
+const bugSampleSnippets = async(req:Request,res:Response,next:NextFunction)=>{
   try {
     const language = req?.query?.language? req.query.language: "python";
     const mode = req?.query?.mode ? req?.query?.mode:  "developer-friendly";
@@ -45,7 +44,8 @@ const bugSampleSnippets = async(req:Request,res:Response)=>{
 
   catch (error: any) {
     console.error(' Error:', error.message);
-    res.status(500).json({ error: 'Failed to analyze code. Please try again.' });
+    next(error);
+   
   }
   
 
